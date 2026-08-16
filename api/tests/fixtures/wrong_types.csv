@@ -1,0 +1,9 @@
+Date,Product,Quantity,Unit Price,Total,Customer
+not-a-date,Widget A,10,$25.00,$250.00,John Smith
+2024-01-15,Widget B,five,$40.00,$200.00,Jane Doe
+01/16/2024,Widget A,8,$25.00,$200.00,Bob Wilson
+Jan 17 2024,Widget C,12,$15.00,$180.00,John Smith
+2024-01-18,Widget B,3,forty,$120.00,Alice Brown
+2024-01-19,Widget A,15,$25.00,$375.00,Jane Doe
+2024-01-19,Widget A,15,$25.00,$375.00,Jane Doe
+2024-01-20,Widget C,20,$15.00,$300.00,Charlie Davis

@@ -1,0 +1,21 @@
+# FastAPI + server
+fastapi==0.115.12
+uvicorn[standard]==0.34.2
+
+# Database
+asyncpg==0.30.0
+
+# Data processing
+pandas>=2.3.0
+openpyxl>=3.1.5
+numpy>=2.2.0
+
+# HTTP client (download blobs)
+httpx==0.28.1
+
+# Settings
+pydantic-settings==2.9.1
+
+# Testing
+pytest==8.3.5
+pytest-asyncio==0.26.0

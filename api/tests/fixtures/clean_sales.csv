@@ -1,0 +1,13 @@
+Date,Product,Quantity,Unit Price,Total,Customer
+2024-01-15,Widget A,10,25.00,250.00,John Smith
+2024-01-15,Widget B,5,40.00,200.00,Jane Doe
+2024-01-16,Widget A,8,25.00,200.00,Bob Wilson
+2024-01-16,Widget C,12,15.00,180.00,John Smith
+2024-01-17,Widget B,3,40.00,120.00,Alice Brown
+2024-01-17,Widget A,15,25.00,375.00,Jane Doe
+2024-01-18,Widget C,20,15.00,300.00,Charlie Davis
+2024-01-18,Widget A,6,25.00,150.00,Bob Wilson
+2024-01-19,Widget B,10,40.00,400.00,John Smith
+2024-01-19,Widget A,4,25.00,100.00,Alice Brown
+2024-01-20,Widget C,8,15.00,120.00,Jane Doe
+2024-01-20,Widget B,7,40.00,280.00,Charlie Davis
