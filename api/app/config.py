@@ -17,6 +17,10 @@ class Settings(BaseSettings):
     # Blob
     blob_read_write_token: str = ""
 
+    # Rate limiting (requests per minute)
+    rate_limit_chat: int = 10
+    rate_limit_reports: int = 5
+
     model_config = {
         "env_file": ".env",
         "env_file_encoding": "utf-8",

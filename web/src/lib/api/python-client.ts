@@ -32,7 +32,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     method,
     headers: {
       "Content-Type": "application/json",
-      "X-Internal-Api-Key": apiKey,
+      "X-Internal-Key": apiKey,
       ...headers,
     },
     body: body ? JSON.stringify(body) : undefined,
@@ -107,7 +107,9 @@ export interface ChatResponse {
 }
 
 export interface ReportResponse {
-  report_id: string;
+  id: string;
+  business_id: string;
+  dataset_id: string;
   pdf_url: string;
   generated_at: string;
 }

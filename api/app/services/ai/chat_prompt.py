@@ -9,14 +9,32 @@ NON-NEGOTIABLE GUARDRAILS:
 4. When discussing money or percentages, cite the exact numbers from the verified metrics context.
 """
 
-def format_chat_context(business_name: str, business_type: str, metrics: dict, question: str) -> str:
+
+def format_chat_context(
+    business_name: str,
+    business_type: str,
+    metrics: dict,
+    question: str,
+    history: list[dict] | None = None,
+) -> str:
     import json
+
+    history_text = ""
+    if history:
+        # Build a short conversation log (skip the last message since that IS the question)
+        lines = []
+        for msg in history[:-1]:  # exclude the just-persisted user question
+            role_label = "User" if msg.get("role") == "user" else "Assistant"
+            lines.append(f"{role_label}: {msg.get('content', '')}")
+        if lines:
+            history_text = "\n\nRecent Conversation:\n" + "\n".join(lines)
+
     return f"""Business Profile:
 - Name: {business_name}
 - Industry: {business_type}
 
 Verified Metrics Snapshot:
-{json.dumps(metrics, indent=2)}
+{json.dumps(metrics, indent=2)}{history_text}
 
 User Question:
 "{question}"

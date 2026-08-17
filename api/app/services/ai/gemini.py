@@ -3,27 +3,37 @@ Strict rule: The LLM explains structured precomputed metrics only, never perform
 
 from __future__ import annotations
 
-import json
 import logging
 import os
+import re
 from typing import Any
 
 logger = logging.getLogger(__name__)
 
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+_KEY_PATTERN = re.compile(r"(key=)[^&\s]+")
 
 
-async def call_llm(system_prompt: str, user_content: str) -> str:
+def _sanitize_url(url: str) -> str:
+    """Replace API key value in a URL with '***' for safe logging."""
+    return _KEY_PATTERN.sub(r"\1***", url)
+
+
+async def call_llm(
+    system_prompt: str,
+    user_content: str,
+    *,
+    max_tokens: int = 800,
+) -> str:
     """Call Google Gemini API (or fallback if API key is not configured)."""
     api_key = os.getenv("GEMINI_API_KEY", "")
     if not api_key:
         return "AI response unavailable — please set GEMINI_API_KEY in environment variables."
 
+    base_url = "https://generativelanguage.googleapis.com/v1beta/models"
+    models = ["gemini-2.0-flash", "gemini-1.5-flash"]
+
     try:
         import httpx
-
-        # Use Gemini REST API directly with httpx (no heavy SDK installation required)
-        url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key={api_key}"
 
         payload = {
             "system_instruction": {
@@ -36,31 +46,31 @@ async def call_llm(system_prompt: str, user_content: str) -> str:
             ],
             "generationConfig": {
                 "temperature": 0.3,
-                "maxOutputTokens": 1000,
+                "maxOutputTokens": max_tokens,
             },
         }
 
         async with httpx.AsyncClient(timeout=30.0) as client:
-            resp = await client.post(url, json=payload)
-            if resp.status_code == 200:
-                data = resp.json()
-                candidates = data.get("candidates", [])
-                if candidates and "content" in candidates[0]:
-                    parts = candidates[0]["content"].get("parts", [])
-                    if parts:
-                        return parts[0].get("text", "")
-            else:
-                logger.warning("Gemini API returned status %s: %s", resp.status_code, resp.text)
-                # Try gemini-1.5-flash as fallback model
-                url_fallback = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={api_key}"
-                resp2 = await client.post(url_fallback, json=payload)
-                if resp2.status_code == 200:
-                    data = resp2.json()
+            for model in models:
+                url = f"{base_url}/{model}:generateContent?key={api_key}"
+                resp = await client.post(url, json=payload)
+
+                if resp.status_code == 200:
+                    data = resp.json()
                     candidates = data.get("candidates", [])
                     if candidates and "content" in candidates[0]:
                         parts = candidates[0]["content"].get("parts", [])
                         if parts:
                             return parts[0].get("text", "")
+                else:
+                    # Log with sanitized URL — never log the raw key
+                    safe_url = _sanitize_url(url)
+                    logger.warning(
+                        "Gemini API returned status %s for %s: %s",
+                        resp.status_code,
+                        safe_url,
+                        resp.text[:200],  # Truncate response body too
+                    )
 
     except Exception as exc:
         logger.exception("Error querying Gemini API: %s", exc)
