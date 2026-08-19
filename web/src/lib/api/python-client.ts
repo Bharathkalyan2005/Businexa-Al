@@ -28,16 +28,27 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
   const url = `${baseUrl}${path}`;
   const { method = "GET", body, headers = {} } = options;
 
-  const res = await fetch(url, {
-    method,
-    headers: {
-      "Content-Type": "application/json",
-      "X-Internal-Key": apiKey,
-      "X-Internal-Api-Key": apiKey,
-      ...headers,
-    },
-    body: body ? JSON.stringify(body) : undefined,
-  });
+  let res: Response;
+  try {
+    res = await fetch(url, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        "X-Internal-Key": apiKey,
+        "X-Internal-Api-Key": apiKey,
+        ...headers,
+      },
+      body: body ? JSON.stringify(body) : undefined,
+    });
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    if (msg.includes("fetch failed") || msg.includes("ECONNREFUSED") || msg.includes("ENOTFOUND")) {
+      throw new Error(
+        `Cannot connect to Python Analytics service at ${baseUrl}. Make sure the FastAPI server is running (\`uvicorn app.main:app --port 8000\`) or check PYTHON_API_URL in your environment.`,
+      );
+    }
+    throw err;
+  }
 
   if (!res.ok) {
     let detail = `HTTP ${res.status}`;
