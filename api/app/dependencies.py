@@ -7,15 +7,17 @@ from app.db.connection import DatabasePool
 
 
 async def verify_api_key(
-    x_internal_api_key: str = Header(..., alias="X-Internal-Api-Key"),
+    x_internal_api_key: str | None = Header(None, alias="X-Internal-Api-Key"),
+    x_internal_key: str | None = Header(None, alias="X-Internal-Key"),
 ) -> str:
     """Reject requests without a valid internal API key."""
-    if x_internal_api_key != settings.internal_api_key:
+    provided_key = x_internal_api_key or x_internal_key
+    if not provided_key or provided_key != settings.internal_api_key:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid or missing API key.",
         )
-    return x_internal_api_key
+    return provided_key
 
 
 async def get_db_pool(

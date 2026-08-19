@@ -33,6 +33,7 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     headers: {
       "Content-Type": "application/json",
       "X-Internal-Key": apiKey,
+      "X-Internal-Api-Key": apiKey,
       ...headers,
     },
     body: body ? JSON.stringify(body) : undefined,

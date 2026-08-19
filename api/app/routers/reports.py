@@ -92,7 +92,16 @@ async def generate_report_endpoint(
         "SELECT raw_json FROM metrics_snapshots WHERE dataset_id = $1 ORDER BY computed_at DESC LIMIT 1",
         body.dataset_id,
     )
-    metrics = json.loads(s_row["raw_json"]) if s_row and s_row["raw_json"] else {}
+    raw_val = s_row["raw_json"] if s_row and s_row["raw_json"] else {}
+    if isinstance(raw_val, str):
+        try:
+            metrics = json.loads(raw_val)
+        except Exception:
+            metrics = {}
+    elif isinstance(raw_val, dict):
+        metrics = raw_val
+    else:
+        metrics = {}
 
     # Fetch insights
     i_rows = await db.fetch_all(

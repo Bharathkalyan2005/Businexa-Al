@@ -22,7 +22,7 @@ export async function getDashboardData(businessId: string) {
   });
   if (!business) return null;
 
-  // Get latest dataset
+  // Get latest dataset (for status awareness)
   const latestDataset = await db.query.datasets.findFirst({
     where: eq(datasets.businessId, businessId),
     orderBy: [desc(datasets.uploadedAt)],
@@ -38,15 +38,35 @@ export async function getDashboardData(businessId: string) {
     };
   }
 
-  // Get latest metrics snapshot
-  const snapshot = await db.query.metricsSnapshots.findFirst({
+  // Get latest metrics snapshot for the dataset (or fallback to latest analyzed dataset's snapshot)
+  let activeDataset = latestDataset;
+  let snapshot = await db.query.metricsSnapshots.findFirst({
     where: eq(metricsSnapshots.datasetId, latestDataset.id),
     orderBy: [desc(metricsSnapshots.computedAt)],
   });
 
-  // Get latest insights
+  if (!snapshot) {
+    // If the most recent upload failed/is processing, look for the most recent analyzed dataset
+    const latestAnalyzedDataset = await db.query.datasets.findFirst({
+      where: and(eq(datasets.businessId, businessId), eq(datasets.status, "analyzed")),
+      orderBy: [desc(datasets.uploadedAt)],
+    });
+
+    if (latestAnalyzedDataset) {
+      const fallbackSnapshot = await db.query.metricsSnapshots.findFirst({
+        where: eq(metricsSnapshots.datasetId, latestAnalyzedDataset.id),
+        orderBy: [desc(metricsSnapshots.computedAt)],
+      });
+      if (fallbackSnapshot) {
+        activeDataset = latestAnalyzedDataset;
+        snapshot = fallbackSnapshot;
+      }
+    }
+  }
+
+  // Get latest insights for the active dataset
   const insightsList = await db.query.insights.findMany({
-    where: eq(insights.datasetId, latestDataset.id),
+    where: eq(insights.datasetId, activeDataset.id),
     orderBy: [desc(insights.createdAt)],
   });
 

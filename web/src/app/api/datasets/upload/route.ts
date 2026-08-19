@@ -83,7 +83,8 @@ export async function POST(request: NextRequest) {
       fileUrl = `data:${file.type || "text/csv"};base64,${base64}`;
     }
 
-    // Create dataset row in Postgres
+    // Create dataset row in Postgres with initial status "uploaded"
+    console.log(`[Upload Flow] Storing file record for businessId=${businessId}, filename=${file.name}`);
     const [dataset] = await db
       .insert(datasets)
       .values({
@@ -94,41 +95,78 @@ export async function POST(request: NextRequest) {
       })
       .returning();
 
+    console.log(`[Upload Flow] Created dataset row id=${dataset.id}. Triggering profiling...`);
+
     // Trigger profiling and analysis via Python service
     let profilingResult = null;
     let analysisResult = null;
-    let pipelineError = null;
 
     try {
+      // Step 1: Profile dataset
+      console.log(`[Upload Flow] Calling POST /datasets/${dataset.id}/profile...`);
       profilingResult = await profileDataset(
         dataset.id,
         fileUrl,
         business.businessType,
       );
+      console.log(
+        `[Upload Flow] Profiling completed for ${dataset.id}: quality_score=${profilingResult.quality_score}, columns=${profilingResult.columns.length}`,
+      );
 
+      // Step 2: Analyze dataset
+      console.log(`[Upload Flow] Calling POST /datasets/${dataset.id}/analyze...`);
       analysisResult = await analyzeDataset(
         dataset.id,
         fileUrl,
         business.businessType,
       );
-    } catch (error) {
-      console.warn("Python analysis call failed:", error);
-      pipelineError = error instanceof Error ? error.message : "Analysis failed";
-    }
+      console.log(
+        `[Upload Flow] Analysis completed for ${dataset.id}: snapshot_id=${analysisResult.snapshot_id}, revenue=${analysisResult.metrics?.revenue}`,
+      );
 
-    return NextResponse.json({
-      dataset: {
-        id: dataset.id,
-        filename: dataset.filename,
-        storageUrl: dataset.storageUrl,
-        status: analysisResult ? "analyzed" : profilingResult ? "profiled" : "uploaded",
-      },
-      profiling: profilingResult,
-      analysis: analysisResult,
-      error: pipelineError,
-    });
+      // Ensure dataset status is updated to analyzed in DB
+      await db
+        .update(datasets)
+        .set({ status: "analyzed" })
+        .where(eq(datasets.id, dataset.id));
+
+      return NextResponse.json({
+        dataset: {
+          id: dataset.id,
+          filename: dataset.filename,
+          storageUrl: dataset.storageUrl,
+          status: "analyzed",
+        },
+        profiling: profilingResult,
+        analysis: analysisResult,
+      });
+    } catch (error) {
+      const errorMsg = error instanceof Error ? error.message : "Processing failed";
+      console.error(`[Upload Flow] Pipeline error for dataset ${dataset.id}:`, error);
+
+      // Mark dataset status as failed in database
+      await db
+        .update(datasets)
+        .set({ status: "failed" })
+        .where(eq(datasets.id, dataset.id));
+
+      return NextResponse.json(
+        {
+          error: `Processing failed: ${errorMsg}`,
+          dataset: {
+            id: dataset.id,
+            filename: dataset.filename,
+            storageUrl: dataset.storageUrl,
+            status: "failed",
+          },
+          profiling: profilingResult,
+          analysis: null,
+        },
+        { status: 422 },
+      );
+    }
   } catch (error) {
-    console.error("Upload error:", error);
+    console.error("[Upload Flow] Upload error:", error);
     return NextResponse.json(
       { error: "An unexpected error occurred during upload." },
       { status: 500 },

@@ -56,14 +56,12 @@ class DatabasePool:
         def _run():
             conn = self._get_connection()
             try:
-                # Convert $1, $2, $3 to ? for pg8000 or format
-                # In pg8000.native: conn.run("SELECT ... WHERE id = :id", id=val)
-                # Or param array replacement:
-                sql = query
-                params = {}
-                for idx, val in enumerate(args, 1):
-                    sql = sql.replace(f"${idx}", f":p{idx}")
-                    params[f"p{idx}"] = str(val) if isinstance(val, (int, float, str)) else val
+                import re
+                sql = re.sub(r"\$(\d+)", r":p\1", query)
+                params = {
+                    f"p{idx}": str(val) if isinstance(val, (int, float, str)) else val
+                    for idx, val in enumerate(args, 1)
+                }
 
                 rows = conn.run(sql, **params)
                 if not rows:
@@ -79,11 +77,12 @@ class DatabasePool:
         def _run():
             conn = self._get_connection()
             try:
-                sql = query
-                params = {}
-                for idx, val in enumerate(args, 1):
-                    sql = sql.replace(f"${idx}", f":p{idx}")
-                    params[f"p{idx}"] = str(val) if isinstance(val, (int, float, str)) else val
+                import re
+                sql = re.sub(r"\$(\d+)", r":p\1", query)
+                params = {
+                    f"p{idx}": str(val) if isinstance(val, (int, float, str)) else val
+                    for idx, val in enumerate(args, 1)
+                }
 
                 rows = conn.run(sql, **params)
                 if not rows:
@@ -99,11 +98,12 @@ class DatabasePool:
         def _run():
             conn = self._get_connection()
             try:
-                sql = query
-                params = {}
-                for idx, val in enumerate(args, 1):
-                    sql = sql.replace(f"${idx}", f":p{idx}")
-                    params[f"p{idx}"] = str(val) if isinstance(val, (int, float, str)) else val
+                import re
+                sql = re.sub(r"\$(\d+)", r":p\1", query)
+                params = {
+                    f"p{idx}": str(val) if isinstance(val, (int, float, str)) else val
+                    for idx, val in enumerate(args, 1)
+                }
 
                 conn.run(sql, **params)
                 return "SUCCESS"

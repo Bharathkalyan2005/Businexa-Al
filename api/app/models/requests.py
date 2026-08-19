@@ -8,7 +8,7 @@ from pydantic import BaseModel, HttpUrl
 class ProfileRequest(BaseModel):
     """Body for POST /datasets/{id}/profile."""
 
-    blob_url: HttpUrl
+    blob_url: str
     business_type: str
 
 

@@ -46,17 +46,30 @@ class DatasetRepository:
             dataset_id,
         )
 
-        for col in columns:
-            await self._db.execute(
-                "INSERT INTO dataset_columns "
-                "(dataset_id, column_name, detected_type, missing_count, missing_pct) "
-                "VALUES ($1, $2, $3, $4, $5)",
+        if not columns:
+            return
+
+        values_clauses: list[str] = []
+        args: list[Any] = []
+        for i, col in enumerate(columns):
+            offset = i * 5
+            values_clauses.append(
+                f"(${offset + 1}, ${offset + 2}, ${offset + 3}, ${offset + 4}, ${offset + 5})"
+            )
+            args.extend([
                 dataset_id,
                 col["column_name"],
                 col["detected_type"],
                 str(col["missing_count"]),
                 str(round(col["missing_pct"], 2)),
-            )
+            ])
+
+        sql = (
+            "INSERT INTO dataset_columns "
+            "(dataset_id, column_name, detected_type, missing_count, missing_pct) "
+            f"VALUES {', '.join(values_clauses)}"
+        )
+        await self._db.execute(sql, *args)
 
     async def insert_metrics_snapshot(
         self,
@@ -85,14 +98,22 @@ class DatasetRepository:
         insights: list[dict[str, str]],
     ) -> None:
         """Bulk-insert deterministic insight strings."""
-        for insight in insights:
-            await self._db.execute(
-                "INSERT INTO insights (dataset_id, insight_text, category) "
-                "VALUES ($1, $2, $3)",
+        if not insights:
+            return
+
+        values_clauses: list[str] = []
+        args: list[Any] = []
+        for i, insight in enumerate(insights):
+            offset = i * 3
+            values_clauses.append(f"(${offset + 1}, ${offset + 2}, ${offset + 3})")
+            args.extend([
                 dataset_id,
                 insight["text"],
                 insight["category"],
-            )
+            ])
+
+        sql = f"INSERT INTO insights (dataset_id, insight_text, category) VALUES {', '.join(values_clauses)}"
+        await self._db.execute(sql, *args)
 
     async def get_columns(self, dataset_id: UUID) -> list[dict[str, Any]]:
         """Fetch all profiled columns for a dataset."""
