@@ -27,7 +27,7 @@ _CHAT_HISTORY_LIMIT = 10  # Only pass last N messages to LLM to control token co
 
 def _validate_internal_key(request: Request) -> None:
     """Reject requests that don't present the correct internal API key."""
-    key = request.headers.get("X-Internal-Key", "")
+    key = request.headers.get("X-Internal-Key") or request.headers.get("X-Internal-Api-Key", "")
     if key != settings.internal_api_key:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,

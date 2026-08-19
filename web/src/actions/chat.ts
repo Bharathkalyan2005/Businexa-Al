@@ -42,6 +42,13 @@ export async function askBusinessQuestion(businessId: string, question: string) 
     return { answer: res.answer };
   } catch (error) {
     console.error("Chat error:", error);
-    return { error: error instanceof Error ? error.message : "Failed to get AI answer" };
+    const msg = error instanceof Error ? error.message : "Failed to get AI answer";
+    if (msg.includes("fetch failed") || msg.includes("ECONNREFUSED")) {
+      return {
+        error:
+          "Analytics backend is offline. Please make sure the Python service is running (`uvicorn app.main:app --port 8000` or deployed on your cloud host).",
+      };
+    }
+    return { error: msg };
   }
 }

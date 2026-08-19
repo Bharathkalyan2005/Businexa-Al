@@ -8,6 +8,8 @@ import os
 import re
 from typing import Any
 
+from app.config import settings
+
 logger = logging.getLogger(__name__)
 
 _KEY_PATTERN = re.compile(r"(key=)[^&\s]+")
@@ -25,12 +27,12 @@ async def call_llm(
     max_tokens: int = 800,
 ) -> str:
     """Call Google Gemini API (or fallback if API key is not configured)."""
-    api_key = os.getenv("GEMINI_API_KEY", "")
+    api_key = settings.gemini_api_key or os.getenv("GEMINI_API_KEY", "")
     if not api_key:
         return "AI response unavailable — please set GEMINI_API_KEY in environment variables."
 
     base_url = "https://generativelanguage.googleapis.com/v1beta/models"
-    models = ["gemini-2.0-flash", "gemini-1.5-flash"]
+    models = ["gemini-3.6-flash", "gemini-3.5-flash", "gemini-flash-latest"]
 
     try:
         import httpx
