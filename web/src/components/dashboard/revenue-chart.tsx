@@ -13,15 +13,16 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 interface RevenueChartProps {
   data: { date?: string; month?: string; revenue: number }[];
+  label?: string;
 }
 
-export function RevenueChart({ data }: RevenueChartProps) {
+export function RevenueChart({ data, label = "Revenue" }: RevenueChartProps) {
   if (!data || data.length === 0) {
     return (
       <Card className="border-border/80 bg-card/60 backdrop-blur-sm">
         <CardHeader>
-          <CardTitle className="text-base font-semibold">Revenue Trend</CardTitle>
-          <CardDescription>Daily or monthly revenue performance</CardDescription>
+          <CardTitle className="text-base font-semibold">{label} Trend</CardTitle>
+          <CardDescription>Daily or monthly performance</CardDescription>
         </CardHeader>
         <CardContent className="flex h-72 items-center justify-center text-sm text-muted-foreground">
           No time-series date columns detected in this dataset.
@@ -39,7 +40,7 @@ export function RevenueChart({ data }: RevenueChartProps) {
     <Card className="border-border/80 bg-card/60 backdrop-blur-sm">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <div>
-          <CardTitle className="text-base font-semibold">Revenue Trend</CardTitle>
+          <CardTitle className="text-base font-semibold">{label} Trend</CardTitle>
           <CardDescription>Historical sales performance over time</CardDescription>
         </div>
       </CardHeader>

@@ -3,14 +3,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 
 interface TopProductsProps {
   products: { product: string; revenue: number; pct_of_total: number }[];
+  label?: string;
 }
 
-export function TopProducts({ products }: TopProductsProps) {
+export function TopProducts({ products, label = "Product" }: TopProductsProps) {
   if (!products || products.length === 0) {
     return (
       <Card className="border-border/80 bg-card/60 backdrop-blur-sm">
         <CardHeader>
-          <CardTitle className="text-base font-semibold">Top Products</CardTitle>
+          <CardTitle className="text-base font-semibold">Top {label}s</CardTitle>
           <CardDescription>Highest revenue generating items</CardDescription>
         </CardHeader>
         <CardContent className="py-8 text-center text-sm text-muted-foreground">
@@ -25,7 +26,7 @@ export function TopProducts({ products }: TopProductsProps) {
       <CardHeader>
         <div className="flex items-center justify-between">
           <div>
-            <CardTitle className="text-base font-semibold">Top Products</CardTitle>
+            <CardTitle className="text-base font-semibold">Top {label}s</CardTitle>
             <CardDescription>By revenue share</CardDescription>
           </div>
           <Award className="size-5 text-amber-500" />

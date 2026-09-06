@@ -4,11 +4,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 interface CustomerSectionProps {
   customerCount: number | null | undefined;
   repeatCustomerRate: number | null | undefined;
+  label?: string;
 }
 
 export function CustomerSection({
   customerCount,
   repeatCustomerRate,
+  label = "Customer",
 }: CustomerSectionProps) {
   if (customerCount === null || customerCount === undefined) {
     return null; // As per specification: only render if customer data exists in dataset
@@ -31,7 +33,7 @@ export function CustomerSection({
             <UserCheck className="size-5" />
           </div>
           <div>
-            <p className="text-xs font-medium text-muted-foreground">Unique Customers</p>
+            <p className="text-xs font-medium text-muted-foreground">Unique {label}s</p>
             <p className="text-xl font-bold">{customerCount.toLocaleString()}</p>
           </div>
         </div>
