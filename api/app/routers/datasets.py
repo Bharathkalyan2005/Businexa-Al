@@ -115,7 +115,7 @@ async def clean_dataset_endpoint(
 @router.post("/{dataset_id}/analyze")
 async def analyze_dataset_endpoint(
     dataset_id: UUID,
-    body: ProfileRequest,
+    body: AnalyzeRequest,
     db: DatabasePool = Depends(get_db_pool),
 ):
     """Clean and analyze the dataset: computes KPIs and deterministic insights."""
