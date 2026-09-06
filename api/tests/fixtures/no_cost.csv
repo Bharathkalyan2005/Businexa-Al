@@ -1,0 +1,13 @@
+Transaction Date,Service,Revenue,Customer ID
+2024-03-01,Haircut,45.00,C001
+2024-03-01,Colouring,120.00,C002
+2024-03-02,Haircut,45.00,C003
+2024-03-02,Blow Dry,30.00,C001
+2024-03-03,Colouring,120.00,C004
+2024-03-03,Haircut,45.00,C005
+2024-03-04,Highlights,200.00,C002
+2024-03-04,Haircut,45.00,C006
+2024-03-05,Blow Dry,30.00,C003
+2024-03-05,Colouring,120.00,C007
+2024-03-06,Haircut,45.00,C001
+2024-03-06,Highlights,200.00,C008

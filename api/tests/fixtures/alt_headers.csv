@@ -1,0 +1,13 @@
+Order Date,Item,Units Sold,Sale Amount,Client
+2024-02-01,Coffee Beans,5,62.50,Alice Corp
+2024-02-01,Tea Bags,12,24.00,Bob Ltd
+2024-02-02,Coffee Beans,8,100.00,Alice Corp
+2024-02-03,Filters,30,15.00,Charlie Inc
+2024-02-03,Tea Bags,6,12.00,Delta Co
+2024-02-04,Coffee Beans,3,37.50,Bob Ltd
+2024-02-05,Filters,20,10.00,Alice Corp
+2024-02-05,Coffee Beans,10,125.00,Echo LLC
+2024-02-06,Tea Bags,9,18.00,Charlie Inc
+2024-02-06,Filters,15,7.50,Bob Ltd
+2024-02-07,Coffee Beans,7,87.50,Alice Corp
+2024-02-07,Tea Bags,4,8.00,Delta Co

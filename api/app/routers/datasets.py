@@ -42,7 +42,7 @@ async def profile_dataset(
 
     try:
         df = await download_and_parse(str(body.blob_url))
-        result = profile_dataframe(df)
+        result = profile_dataframe(df, business_type=body.business_type)
         await repo.insert_columns(dataset_id, result["columns"])
         await repo.update_status(dataset_id, "profiled")
 
@@ -52,6 +52,12 @@ async def profile_dataset(
             duplicate_count=result["duplicate_count"],
             columns=result["columns"],
             quality_score=result["quality_score"],
+            role_mapping=result["role_mapping"],
+            dashboard_viable=result["dashboard_viable"],
+            dashboard_error=result["dashboard_error"],
+            excluded_columns=result["excluded_columns"],
+            pipeline_log=result["pipeline_log"],
+            ui_confirmations=result.get("ui_confirmations", []),
         )
 
     except ValueError as exc:
@@ -125,10 +131,27 @@ async def analyze_dataset_endpoint(
 
     try:
         df = await download_and_parse(str(body.blob_url))
-        clean_result = clean_dataframe(df)
+
+        # Profile first to get auto-detected role mapping
+        profile_result = profile_dataframe(df, business_type=body.business_type)
+        auto_role_mapping = profile_result["role_mapping"]
+
+        # Clean using the detected (or user-confirmed) role mapping so that
+        # date and numeric columns are correctly parsed/coerced by role.
+        effective_mapping = dict(auto_role_mapping)
+        if body.column_mapping:
+            from app.services.column_roles import merge_role_mapping
+            effective_mapping = merge_role_mapping(auto_role_mapping, body.column_mapping)
+
+        clean_result = clean_dataframe(df, role_mapping=effective_mapping)
         cleaned_df = clean_result["cleaned_df"]
 
-        analysis = run_full_analysis(cleaned_df, body.business_type)
+        analysis = run_full_analysis(
+            cleaned_df,
+            body.business_type,
+            role_mapping=body.column_mapping,
+            auto_role_mapping=auto_role_mapping,
+        )
         metrics = analysis["metrics"]
         insights = analysis["insights"]
 
@@ -142,6 +165,8 @@ async def analyze_dataset_endpoint(
             "status": "analyzed",
             "metrics": metrics,
             "insights": insights,
+            "cleaning_summary": clean_result["summary"],
+            "role_mapping": effective_mapping,
         }
     except Exception as exc:
         await repo.update_status(dataset_id, "failed")

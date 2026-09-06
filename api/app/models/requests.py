@@ -1,24 +1,21 @@
 """Pydantic request models for the API."""
 
-from uuid import UUID
-
-from pydantic import BaseModel, HttpUrl
+from pydantic import BaseModel, Field
 
 
 class ProfileRequest(BaseModel):
     """Body for POST /datasets/{id}/profile."""
 
     blob_url: str
-    business_type: str
-
-
-class CleanRequest(BaseModel):
-    """Body for POST /datasets/{id}/clean (Phase 3)."""
-
-    pass
+    business_type: str = "other"
 
 
 class AnalyzeRequest(BaseModel):
-    """Body for POST /datasets/{id}/analyze (Phase 3)."""
+    """Body for POST /datasets/{id}/analyze."""
 
-    business_type: str
+    blob_url: str
+    business_type: str = "other"
+    column_mapping: dict[str, str | None] | None = Field(
+        default=None,
+        description="User-confirmed role → column name mapping",
+    )
