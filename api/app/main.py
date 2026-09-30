@@ -15,7 +15,7 @@ from slowapi.util import get_remote_address
 
 from app.config import settings
 from app.db.connection import DatabasePool
-from app.routers import ai, datasets, health, insights, reports
+from app.routers import ai, datasets, health, insights, reports, universal
 
 logging.basicConfig(
     level=logging.INFO,
@@ -73,3 +73,4 @@ app.include_router(datasets.router)
 app.include_router(insights.router)
 app.include_router(ai.router)
 app.include_router(reports.router)
+app.include_router(universal.router)

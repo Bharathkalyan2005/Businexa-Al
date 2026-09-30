@@ -13,6 +13,7 @@ class Settings(BaseSettings):
     # AI Keys
     gemini_api_key: str = ""
     anthropic_api_key: str = ""
+    groq_api_key: str = ""
 
     # Blob
     blob_read_write_token: str = ""
